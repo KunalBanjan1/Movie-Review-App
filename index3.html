@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMDB Movie Reviews</title>
+    <style>
+        /* Add your CSS styles here */
+        body {
+            font-family: Arial, sans-serif;
+        }
+        header {
+            text-align: center;
+            padding: 20px;
+        }
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        form {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .review {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>TMDB Movie Reviews</h1>
+    </header>
+    <main>
+        <!-- Movie search form -->
+        <form id="search-form">
+            <input type="text" id="movie-name" placeholder="Enter a movie name">
+            <button type="submit">Search</button>
+        </form>
+
+        <!-- Display movie reviews here -->
+        <div id="movie-reviews"></div>
+    </main>
+
+    <script>
+        // JavaScript code goes here
+        const apiKey = '5cf6a9d5a6c229dba26106f85d7f36be';
+        const apiUrl = 'https://api.themoviedb.org/3';
+
+        const searchForm = document.getElementById('search-form');
+        const movieNameInput = document.getElementById('movie-name');
+        const movieReviewsContainer = document.getElementById('movie-reviews');
+
+        searchForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const movieName = movieNameInput.value;
+
+            // Fetch movie data from TMDB API
+            fetch(`${apiUrl}/search/movie?api_key=${apiKey}&query=${movieName}`)
+                .then(response => response.json())
+                .then(data => {
+                    const movie = data.results[0]; // Assuming the first result is the movie you want
+
+                    // Fetch movie reviews
+                    fetch(`${apiUrl}/movie/${movie.id}/reviews?api_key=${apiKey}`)
+                        .then(response => response.json())
+                        .then(reviewData => {
+                            const reviews = reviewData.results;
+                            movieReviewsContainer.innerHTML = '';
+
+                            if (reviews.length === 0) {
+                                movieReviewsContainer.innerHTML = 'No reviews found for this movie.';
+                            } else {
+                                reviews.forEach(review => {
+                                    const reviewElement = document.createElement('div');
+                                    reviewElement.classList.add('review');
+                                    reviewElement.innerHTML = `
+                                        <h2>${review.author}</h2>
+                                        <p>${review.content}</p>
+                                    `;
+                                    movieReviewsContainer.appendChild(reviewElement);
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching movie reviews:', error);
+                            movieReviewsContainer.innerHTML = 'An error occurred while fetching reviews.';
+                        });
+                })
+                .catch(error => {
+                    console.error('Error fetching movie data:', error);
+                    movieReviewsContainer.innerHTML = 'An error occurred while fetching movie data.';
+                });
+        });
+    </script>
+</body>
+</html>
